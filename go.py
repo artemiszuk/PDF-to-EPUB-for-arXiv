@@ -41,15 +41,14 @@ def general_crop(tpage, leniance = 5, step = 5):
 
 
 def convert_to_epub(temp_dir, output_dir, title, img_shapes):
-    if True:
-        container_xml = '''<?xml version="1.0"?>
+    container_xml = '''<?xml version="1.0"?>
         <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
         <rootfiles>
         <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
         </rootfiles>
         </container>
         '''
-        nav_xhtml = '''<?xml version="1.0" encoding="utf-8"?>
+    nav_xhtml = '''<?xml version="1.0" encoding="utf-8"?>
         <!DOCTYPE html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
         <head>
@@ -70,7 +69,7 @@ def convert_to_epub(temp_dir, output_dir, title, img_shapes):
         </body>
         </html>
         '''
-        toc_ncx = '''<?xml version="1.0" encoding="UTF-8"?>
+    toc_ncx = '''<?xml version="1.0" encoding="UTF-8"?>
         <ncx version="2005-1" xml:lang="en-US" xmlns="http://www.daisy.org/z3986/2005/ncx/">
         <head>
         <meta name="dtb:uid" content="urn:uuid:3b6462a2-2cf2-4b2e-8779-4d9bb6e5f2c3"/>
@@ -85,7 +84,7 @@ def convert_to_epub(temp_dir, output_dir, title, img_shapes):
         </navMap>
         </ncx>
         '''
-        style_css = '''@page {
+    style_css = '''@page {
         margin: 0;
         }
         body {
@@ -94,7 +93,7 @@ def convert_to_epub(temp_dir, output_dir, title, img_shapes):
         padding: 0;
         }
         '''
-        content_opf_upper = '''<?xml version="1.0" encoding="UTF-8"?>
+    content_opf_upper = '''<?xml version="1.0" encoding="UTF-8"?>
         <package version="3.0" unique-identifier="BookID" xmlns="http://www.idpf.org/2007/opf">
         <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
         <dc:title>{0}</dc:title>
@@ -113,20 +112,20 @@ def convert_to_epub(temp_dir, output_dir, title, img_shapes):
         <item id="nav" href="nav.xhtml" properties="nav" media-type="application/xhtml+xml"/>
         <item id="cover" href="Images/cover.jpg" media-type="image/jpeg" properties="cover-image"/>
         '''
-        content_opf_middle = '''<item id="css" href="Text/style.css" media-type="text/css"/>
+    content_opf_middle = '''<item id="css" href="Text/style.css" media-type="text/css"/>
         </manifest>
         <spine page-progression-direction="ltr" toc="ncx">
         '''
-        content_opf_lower = '''</spine>
+    content_opf_lower = '''</spine>
         </package>
         '''
-        content_opf_manifest_template = '''
+    content_opf_manifest_template = '''
         <item id="page_Images_{0}" href="Text/{0}.xhtml" media-type="application/xhtml+xml"/>
         <item id="img_Images_{0}" href="Images/{0}.jpg" media-type="image/jpeg"/>
         '''
-        content_opf_spine_template = '''<itemref idref="page_Images_{0}"/>'''
+    content_opf_spine_template = '''<itemref idref="page_Images_{0}"/>'''
 
-        xhtml_template = '''<?xml version="1.0" encoding="UTF-8"?>
+    xhtml_template = '''<?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
         <head>
@@ -159,9 +158,7 @@ def convert_to_epub(temp_dir, output_dir, title, img_shapes):
     im_content = open(images[0], 'rb').read()
     epub.writestr("OEBPS/Images/" + 'cover.jpg', im_content)
 
-    # write the rest of the images
-    index = 0
-    for i in names:
+    for index, i in enumerate(names):
         manifest += content_opf_manifest_template.format(i)
         spine += content_opf_spine_template.format(i)
 
@@ -170,7 +167,6 @@ def convert_to_epub(temp_dir, output_dir, title, img_shapes):
         image_width = img_shapes[index][0]
         image_height = img_shapes[index][1]
 
-        index += 1
         epub.writestr("OEBPS/Images/" + i + '.jpg', im_content)
 
         xhtml_content = xhtml_template.format(i, image_width, image_height)
@@ -183,10 +179,11 @@ def convert_to_epub(temp_dir, output_dir, title, img_shapes):
 
 
 ''' TEST ZONE '''
+
 LENIANCE = 5 # 5 normal, 20 for a smol border (for converting light novels)
 pdfs = [work_dir + i for i in os.listdir(work_dir) if i[-4:] == '.pdf']
 
-one_pdf = pdfs[0]    
+one_pdf = pdfs[0]
 pdf_title = one_pdf.split('\\')[-1].split('.')[0]
 print("Starting:\n" + pdf_title)
 
@@ -220,37 +217,10 @@ if fc_height / fc_width < 1:
 
 
 
-# custom crop 
-if False:
-        
-    # P R E - C R O P
-    # dark mode cropping master page - R U N  O N C E 
-    BRUH = 50 # skip BRUH front / back pages 
-    test_page_ = imgs[BRUH].copy() 
-    for i in range(BRUH, len(imgs)-BRUH):
-        test_page_ = np.maximum(test_page_, imgs[i])    
-
-    # C R O P   D I M S   E X P E R I M E N T A T I O N 
-    x_left = 480
-    x_right = 220
-    y_up = 200
-    y_down = 200
-    total_page = test_page_.copy()
-    total_page[y_up,:] = 255
-    total_page[:,x_left] = 255
-    total_page[-y_down,:] = 255
-    total_page[:,-x_right] = 255 
-    im.fromarray(total_page).show()
-
-    imgs = [i[y_up:-y_down:,x_left:-x_right] for i in imgs[1:]] # custom crop
-
-
-
-
 # perform general crop and split
-all_slices = [front_cover] 
+all_slices = [front_cover]
 for i in imgs: 
-    all_slices += general_split(general_crop(i,LENIANCE)) 
+    all_slices += general_split(general_crop(i,LENIANCE))
 img_shapes = [[i.shape[1], i.shape[0]] for i in all_slices] # width, height
 
 
